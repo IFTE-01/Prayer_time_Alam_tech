@@ -146,9 +146,6 @@ export default function App() {
   const is24h = false;
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
-  // App active Tab
-  const [activeTab, setActiveTab] = useState<'times' | 'foundations'>('times');
-
   // Real-time clock
   const [clockTime, setClockTime] = useState<Date>(new Date());
 
@@ -622,42 +619,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Dynamic Nav Tabs */}
-        <div className="flex border-b border-white/10 mb-8 overflow-x-auto scrollbar-none">
-          <button
-            id="tab-btn-times"
-            onClick={() => setActiveTab('times')}
-            className={`px-6 py-3.5 text-sm font-bold border-b-2 transition-all cursor-pointer tracking-wider shrink-0 ${
-              activeTab === 'times'
-                ? 'border-emerald-500 text-emerald-400 font-extrabold'
-                : 'border-transparent text-slate-400 dark:text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            আজকের সময়সূচী
-          </button>
-          <button
-            id="tab-btn-foundations"
-            onClick={() => setActiveTab('foundations')}
-            className={`px-6 py-3.5 text-sm font-bold border-b-2 transition-all cursor-pointer tracking-wider shrink-0 ${
-              activeTab === 'foundations'
-                ? 'border-emerald-500 text-emerald-400 font-extrabold'
-                : 'border-transparent text-slate-400 dark:text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            ভিত্তি ও হাদিসসমূহ
-          </button>
-        </div>
-
-        {/* TAB 1: TIMES DASHBOARD */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'times' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-8"
-            >
+        {/* TIMES DASHBOARD */}
+        <div className="space-y-8">
               
               {/* Hero Section: Next Prayer with Immersive aesthetic */}
               <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-emerald-900/40 to-slate-900/40 border border-emerald-500/20 p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-md">
@@ -745,14 +708,36 @@ export default function App() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                     </svg>
                   </div>
-                  <div>
+                  <div className="space-y-4 w-full">
                     <h4 className="text-xs uppercase tracking-[0.2em] font-extrabold text-emerald-400 mb-1">আওয়াল ওয়াক্তে নামায আদায়ের গুরুত্ব</h4>
-                    <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed">
-                      "রাসূলুল্লাহ্ সাল্লাল্লাহু আলাইহি ওয়া সাল্লামকে উত্তম আমল সম্পর্কে জিজ্ঞাসা করা হলে তিনি বলেনঃ ওয়াক্তের প্রথম ভাগে নামায আদায় করা সর্বোত্তম কাজ।"
-                    </p>
-                    <p className="text-[10px] font-bold text-slate-400 mt-1">
-                      — সুনান আবূ দাউদ : ৪২৬
-                    </p>
+                    
+                    {/* Hadith 1 */}
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed mb-1.5">
+                        "আমি রাসূলুল্লাহ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম)-কে জিজ্ঞাসা করলাম, 'কোন আমলটি আল্লাহর কাছে সবচেয়ে প্রিয়?' তিনি উত্তর দিলেন, 'ঠিক সময়ে (ওয়াক্তমতো) নামায আদায় করা।'"
+                      </p>
+                      <p className="text-xs text-emerald-300 italic font-medium leading-relaxed">
+                        "Allah's most beloved is one who offers prayer at the proper time."
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 mt-2">
+                        — সহীহ বুখারী ৫২৭, সহীহ মুসলিম ৮৫ (Sahih al-Bukhari: 527, Sahih Muslim: 85)
+                      </p>
+                    </div>
+
+                    <div className="border-t border-emerald-500/10 my-1" />
+
+                    {/* Hadith 2 */}
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed mb-1.5">
+                        "রাসূলুল্লাহ্ সাল্লাল্লাহু আলাইহি ওয়া সাল্লামকে উত্তম আমল সম্পর্কে জিজ্ঞাসা করা হলে তিনি বলেনঃ ওয়াক্তের প্রথম ভাগে নামায আদায় করা সর্বোত্তম কাজ।"
+                      </p>
+                      <p className="text-xs text-emerald-300 italic font-medium leading-relaxed">
+                        "The Messenger of Allah (peace be upon him) was asked about the best deed, and he said: 'Offering prayer at the beginning of its time.'"
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 mt-2">
+                        — সুনান আবূ দাউদ : ৪২৬ (Sunan Abi Dawud: 426)
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -837,23 +822,7 @@ export default function App() {
                 })}
               </main>
 
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* TAB 2: HADITH FOUNDATIONS */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'foundations' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <HadithSection activePrayerId={activePrayer.id} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
 
         {/* PRAYER CARD GENERATOR & SHARING SECTION */}
         <section className="mt-16 bg-slate-900/20 border border-white/5 rounded-[32px] p-6 sm:p-8 relative overflow-hidden z-10">
