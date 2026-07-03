@@ -105,6 +105,28 @@ function getEstimatedHijriDate(date: Date): string {
   return translateToBanglaText(rawDateStr);
 }
 
+function estimateLocationFromCoords(lat: number, lon: number): { city: string, country: string } {
+  // Bangladesh coordinate bounds approx: Lat [20.6, 26.6], Lon [88.0, 92.7]
+  if (lat >= 20.0 && lat <= 27.0 && lon >= 87.0 && lon <= 93.0) {
+    if (lat >= 21.0 && lat <= 23.0 && lon >= 91.0 && lon <= 93.0) {
+      return { city: "Chittagong", country: "Bangladesh" };
+    }
+    return { city: "Dhaka", country: "Bangladesh" };
+  }
+  // Russia coordinate bounds approx: Lat [41.0, 82.0], Lon [19.0, 180.0]
+  if (lat >= 41.0 && lat <= 82.0 && lon >= 19.0 && lon <= 180.0) {
+    return { city: "Moscow", country: "Russia" };
+  }
+  // Saudi Arabia / Makkah / Riyadh
+  if (lat >= 15.0 && lat <= 32.0 && lon >= 34.0 && lon <= 56.0) {
+    if (lat >= 21.0 && lat <= 22.0 && lon >= 39.0 && lon <= 40.5) {
+      return { city: "Makkah", country: "Saudi Arabia" };
+    }
+    return { city: "Riyadh", country: "Saudi Arabia" };
+  }
+  return { city: `Region (${lat.toFixed(1)}°N, ${lon.toFixed(1)}°E)`, country: "Local Area" };
+}
+
 export default function App() {
   // Theme state permanently locked to dark as requested (no toggler logo)
   const theme = 'dark';
@@ -154,7 +176,7 @@ export default function App() {
 
         setLocationStatus('granted');
 
-        // Fetch city/country
+        // Fetch city/country from backend first
         fetch(`/api/geocode?lat=${lat}&lon=${lon}`)
           .then(res => res.json())
           .then(data => {
@@ -162,14 +184,47 @@ export default function App() {
               setCityName(data.city);
               setCountryName(data.country);
             } else {
-              setCityName("Chittagong");
-              setCountryName("Bangladesh");
+              // Try client-side direct request to BigDataCloud reverse-geocode API
+              fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+                .then(r => r.json())
+                .then(bdc => {
+                  const city = bdc.city || bdc.locality || bdc.principalSubdivision || "";
+                  const country = bdc.countryName || "";
+                  if (city && country) {
+                    setCityName(city);
+                    setCountryName(country);
+                  } else {
+                    throw new Error("No city/country found");
+                  }
+                })
+                .catch(() => {
+                  // Coordinate-based estimation fallback
+                  const est = estimateLocationFromCoords(lat, lon);
+                  setCityName(est.city);
+                  setCountryName(est.country);
+                });
             }
           })
           .catch(err => {
-            console.error("Geocoding error:", err);
-            setCityName("Chittagong");
-            setCountryName("Bangladesh");
+            console.warn("Geocoding backend error, trying direct BigDataCloud client API:", err);
+            fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+              .then(r => r.json())
+              .then(bdc => {
+                const city = bdc.city || bdc.locality || bdc.principalSubdivision || "";
+                const country = bdc.countryName || "";
+                if (city && country) {
+                  setCityName(city);
+                  setCountryName(country);
+                } else {
+                  throw new Error("No city/country found");
+                }
+              })
+              .catch(() => {
+                // Coordinate-based estimation fallback
+                const est = estimateLocationFromCoords(lat, lon);
+                setCityName(est.city);
+                setCountryName(est.country);
+              });
           });
       },
       (error) => {

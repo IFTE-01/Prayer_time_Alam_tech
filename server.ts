@@ -45,9 +45,28 @@ app.get("/api/geocode", async (req, res) => {
     return res.status(400).json({ error: "Missing lat or lon parameters" });
   }
 
+  const numLat = parseFloat(lat as string);
+  const numLon = parseFloat(lon as string);
+
+  // Attempt 1: BigDataCloud Reverse Geocoding Client API (Free, fast, works great in cloud environments)
   try {
-    // Attempt 1: Nominatim OpenStreetMap (Free reverse geocoding)
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`;
+    const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${numLat}&longitude=${numLon}&localityLanguage=en`;
+    const response = await fetch(bdcUrl);
+    if (response.ok) {
+      const data = await response.json() as any;
+      const city = data.city || data.locality || data.principalSubdivision || "";
+      const country = data.countryName || "";
+      if (city && country) {
+        return res.json({ city, country });
+      }
+    }
+  } catch (e) {
+    console.error("BigDataCloud geocoding error:", e);
+  }
+
+  // Attempt 2: Nominatim OpenStreetMap (Free reverse geocoding)
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${numLat}&lon=${numLon}&format=json&accept-language=en`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "AlamTechPrayerApp/1.0 (iftekharalam5623@gmail.com)"
@@ -57,19 +76,21 @@ app.get("/api/geocode", async (req, res) => {
     if (response.ok) {
       const data = await response.json() as any;
       const address = data.address || {};
-      const city = address.city || address.town || address.village || address.suburb || address.city_district || address.state || "Chittagong";
-      const country = address.country || "Bangladesh";
-      return res.json({ city, country });
+      const city = address.city || address.town || address.village || address.suburb || address.city_district || address.state || address.county || "";
+      const country = address.country || "";
+      if (city && country) {
+        return res.json({ city, country });
+      }
     }
   } catch (e) {
     console.error("Nominatim geocoding error:", e);
   }
 
-  // Attempt 2: Fallback to Gemini if API key is present
+  // Attempt 3: Fallback to Gemini if API key is present
   const ai = getGeminiClient();
   if (ai) {
     try {
-      const prompt = `Based on the latitude ${lat} and longitude ${lon}, identify the closest major city and country name. Return ONLY a JSON object in this exact format, with no markdown formatting:
+      const prompt = `Based on the latitude ${numLat} and longitude ${numLon}, identify the closest major city and country name. Return ONLY a JSON object in this exact format, with no markdown formatting:
 {"city": "CityName", "country": "CountryName"}`;
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
@@ -88,8 +109,38 @@ app.get("/api/geocode", async (req, res) => {
     }
   }
 
-  // Final fallback
-  res.json({ city: "Makkah", country: "Saudi Arabia" });
+  // Attempt 4: Geographic coordinate-based fallback to avoid hardcoded "Chittagong" everywhere
+  // Bangladesh coordinate bounds approx: Lat [20.6, 26.6], Lon [88.0, 92.7]
+  if (numLat >= 20.0 && numLat <= 27.0 && numLon >= 87.0 && numLon <= 93.0) {
+    // Check if close to Chittagong area
+    if (numLat >= 21.0 && numLat <= 23.0 && numLon >= 91.0 && numLon <= 93.0) {
+      return res.json({ city: "Chittagong", country: "Bangladesh" });
+    }
+    // Check if close to Dhaka
+    if (numLat >= 23.3 && numLat <= 24.3 && numLon >= 89.8 && numLon <= 91.0) {
+      return res.json({ city: "Dhaka", country: "Bangladesh" });
+    }
+    return res.json({ city: "Dhaka", country: "Bangladesh" });
+  }
+
+  // Russia coordinate bounds: Lat [41.0, 82.0], Lon [19.0, 180.0]
+  if (numLat >= 41.0 && numLat <= 82.0 && numLon >= 19.0 && numLon <= 180.0) {
+    return res.json({ city: "Moscow", country: "Russia" });
+  }
+
+  // Middle East / Saudi Arabia
+  if (numLat >= 15.0 && numLat <= 32.0 && numLon >= 34.0 && numLon <= 56.0) {
+    if (numLat >= 21.0 && numLat <= 22.0 && numLon >= 39.0 && numLon <= 40.5) {
+      return res.json({ city: "Makkah", country: "Saudi Arabia" });
+    }
+    return res.json({ city: "Riyadh", country: "Saudi Arabia" });
+  }
+
+  // Default to a generic coordinate representation rather than hardcoding Chittagong
+  res.json({ 
+    city: `Region (${numLat.toFixed(1)}°N, ${numLon.toFixed(1)}°E)`, 
+    country: "Local Area" 
+  });
 });
 
 // API Route: Ask the Salah Scholar (Gemini API)
