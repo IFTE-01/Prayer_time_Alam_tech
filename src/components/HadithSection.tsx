@@ -107,13 +107,20 @@ export default function HadithSection({ activePrayerId }: HadithSectionProps) {
               "{item.text}"
             </p>
 
-            <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-slate-400">
-              <span className="font-semibold">{item.source}</span>
+            <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-zinc-500 dark:text-slate-400 border-t border-zinc-100/50 dark:border-white/5 pt-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-zinc-700 dark:text-slate-300">{item.source}</span>
+                {item.international && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded font-sans font-medium">
+                    Int: {item.international}
+                  </span>
+                )}
+              </div>
               
               <button
                 id={`btn-copy-${index}`}
-                onClick={() => handleCopy(`${item.text} — ${item.source}`, index)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-zinc-200 dark:hover:bg-white/5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-350 cursor-pointer flex items-center gap-1"
+                onClick={() => handleCopy(`${item.text} — ${item.source}${item.international ? ` (International: ${item.international})` : ''}`, index)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-zinc-200 dark:hover:bg-white/5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-slate-350 cursor-pointer flex items-center gap-1 self-end sm:self-auto"
                 title="কপি করুন"
               >
                 {copiedIndex === index ? (

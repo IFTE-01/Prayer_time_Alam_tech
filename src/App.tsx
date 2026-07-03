@@ -339,6 +339,84 @@ export default function App() {
   const nextPrayerIndex = (currentPrayerIndex + 1) % prayersInOrder.length;
   const nextPrayer = prayersInOrder[nextPrayerIndex];
 
+  const getCurrentRunningPeriod = () => {
+    const raw = calculatedTimes.raw;
+    const fajr = raw.fajr;
+    const sunrise = raw.sunrise;
+    const dhuhr = raw.dhuhr;
+    const asr = raw.asr;
+    const maghrib = raw.maghrib;
+    const isha = raw.isha;
+
+    // Fajr: from Fajr till Sunrise
+    if (currentDecimalHour >= fajr && currentDecimalHour < sunrise) {
+      return {
+        id: 'fajr' as const,
+        name: 'Fajr',
+        banglaName: 'ফজর',
+        startTimeStr: calculatedTimes.fajr,
+        endTimeStr: calculatedTimes.sunrise,
+        isNamazPeriodRunning: true
+      };
+    }
+    // Dhuhr: from Dhuhr till Asr
+    if (currentDecimalHour >= dhuhr && currentDecimalHour < asr) {
+      return {
+        id: 'dhuhr' as const,
+        name: 'Dhuhr',
+        banglaName: 'যোহর',
+        startTimeStr: calculatedTimes.dhuhr,
+        endTimeStr: calculatedTimes.asr,
+        isNamazPeriodRunning: true
+      };
+    }
+    // Asr: from Asr till Maghrib
+    if (currentDecimalHour >= asr && currentDecimalHour < maghrib) {
+      return {
+        id: 'asr' as const,
+        name: 'Asr',
+        banglaName: 'আসর',
+        startTimeStr: calculatedTimes.asr,
+        endTimeStr: calculatedTimes.maghrib,
+        isNamazPeriodRunning: true
+      };
+    }
+    // Maghrib: from Maghrib till Isha
+    if (currentDecimalHour >= maghrib && currentDecimalHour < isha) {
+      return {
+        id: 'maghrib' as const,
+        name: 'Maghrib',
+        banglaName: 'মাগরিব',
+        startTimeStr: calculatedTimes.maghrib,
+        endTimeStr: calculatedTimes.isha,
+        isNamazPeriodRunning: true
+      };
+    }
+    // Isha: from Isha till midnight, or from midnight till Fajr
+    if (currentDecimalHour >= isha || currentDecimalHour < fajr) {
+      return {
+        id: 'isha' as const,
+        name: 'Isha',
+        banglaName: 'এশা',
+        startTimeStr: calculatedTimes.isha,
+        endTimeStr: calculatedTimes.fajr,
+        isNamazPeriodRunning: true
+      };
+    }
+
+    // Between Sunrise and Dhuhr (No obligatory prayer running)
+    return {
+      id: 'none' as const,
+      name: 'None',
+      banglaName: 'কোনো ফরজ নামাজের ওয়াক্ত নেই',
+      startTimeStr: '',
+      endTimeStr: '',
+      isNamazPeriodRunning: false
+    };
+  };
+
+  const runningPeriod = getCurrentRunningPeriod();
+
   const getTickingCountdown = () => {
     const target = new Date(clockTime);
     const hrs = Math.floor(nextPrayer.timeValue);
@@ -557,6 +635,52 @@ export default function App() {
                 </div>
               </section>
 
+              {/* Current Running Salat Period Info */}
+              <div className="p-6 rounded-[32px] bg-gradient-to-r from-emerald-950/20 to-slate-900/40 border border-emerald-500/10 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-sm relative overflow-hidden z-10">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl shrink-0">
+                    <Clock size={24} className={runningPeriod.isNamazPeriodRunning ? "animate-pulse" : ""} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-emerald-400 uppercase tracking-widest font-extrabold block">
+                      চলমান সময়সূচী • Current Active Period
+                    </span>
+                    <h3 className="text-lg sm:text-xl font-black text-white mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      {runningPeriod.isNamazPeriodRunning ? (
+                        <>
+                          <span className="text-emerald-400">
+                            {runningPeriod.banglaName} ওয়াক্ত চলছে
+                          </span>
+                          <span className="text-xs text-slate-400 font-semibold px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
+                            {runningPeriod.name} Period
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-amber-400">
+                            বর্তমানে কোনো ফরজ নামাজের ওয়াক্ত নেই
+                          </span>
+                          <span className="text-xs text-slate-400 font-semibold px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
+                            No Active Obligatory Waqt
+                          </span>
+                        </>
+                      )}
+                    </h3>
+                  </div>
+                </div>
+
+                {runningPeriod.isNamazPeriodRunning ? null : (
+                  <div className="text-left md:text-right border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6 shrink-0 relative z-10 flex flex-col gap-0.5">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">পরবর্তী ওয়াক্ত শুরু</p>
+                    <p className="font-mono text-base font-black text-amber-400 mt-1">
+                      {nextPrayer.timeStr}
+                    </p>
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Starts At {nextPrayer.timeStr}</p>
+                  </div>
+                )}
+              </div>
+
               {/* Core Hadith on Awal/First Waqt Prayer */}
               <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-3xl p-6 relative overflow-hidden shadow-sm relative z-10">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -620,7 +744,7 @@ export default function App() {
               {/* Bento Grid Prayer Times */}
               <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 relative z-10">
                 {prayersInOrder.map((p) => {
-                  const isActive = activePrayer.id === p.id;
+                  const isActive = runningPeriod.id === p.id;
 
                   return (
                     <div
@@ -638,7 +762,10 @@ export default function App() {
                             নামাযের ওয়াক্ত
                           </span>
                           {isActive && (
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-[9px] text-emerald-400 font-extrabold tracking-wider uppercase">চলমান</span>
+                              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                            </span>
                           )}
                         </div>
 
@@ -650,8 +777,6 @@ export default function App() {
                           {p.timeStr}
                         </h4>
                       </div>
-
-
                     </div>
                   );
                 })}
