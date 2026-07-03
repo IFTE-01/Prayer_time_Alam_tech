@@ -902,10 +902,10 @@ export default function App() {
 
                   {/* Prayer list inside Card */}
                   <div className="flex flex-col gap-2.5 relative z-10 font-sans">
-                    {/* Fajar */}
+                    {/* Fajr */}
                     <div className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-black text-white">Fajar</span>
+                        <span className="text-xs sm:text-sm font-black text-white">Fajr</span>
                         <span className="text-[9px] text-slate-500 font-bold">ফজর</span>
                       </div>
                       <div className="text-right">
@@ -913,10 +913,10 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Johar */}
+                    {/* Dhuhr */}
                     <div className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-black text-white">Johar</span>
+                        <span className="text-xs sm:text-sm font-black text-white">Dhuhr</span>
                         <span className="text-[9px] text-slate-500 font-bold">যোহর</span>
                       </div>
                       <div className="text-right">
@@ -924,10 +924,10 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Asar */}
+                    {/* Asr */}
                     <div className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-black text-white">Asar</span>
+                        <span className="text-xs sm:text-sm font-black text-white">Asr</span>
                         <span className="text-[9px] text-slate-500 font-bold">আসর</span>
                       </div>
                       <div className="text-right">
@@ -946,10 +946,10 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Esha */}
+                    {/* Isha */}
                     <div className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-black text-white">Esha</span>
+                        <span className="text-xs sm:text-sm font-black text-white">Isha</span>
                         <span className="text-[9px] text-slate-500 font-bold">এশা</span>
                       </div>
                       <div className="text-right">
