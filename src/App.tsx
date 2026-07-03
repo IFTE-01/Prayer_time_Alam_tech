@@ -21,6 +21,7 @@ import {
   School
 } from './utils/prayerCalc';
 import HadithSection from './components/HadithSection';
+import AppLogo from './components/AppLogo';
 
 // English to Bangla helper variables
 const EN_DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -139,6 +140,7 @@ export default function App() {
   const [countryName, setCountryName] = useState<string>("Saudi Arabia");
   const [locationStatus, setLocationStatus] = useState<'prompt' | 'detecting' | 'granted' | 'denied' | 'error'>('prompt');
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [isAppUnlocked, setIsAppUnlocked] = useState<boolean>(false);
 
   // Settings variables (Using Standard Calculation method)
   const selectedMethod = CALCULATION_METHODS[0]; // MWL (Muslim World League)
@@ -172,6 +174,7 @@ export default function App() {
         setTimezoneOffset(offset);
 
         setLocationStatus('granted');
+        setIsAppUnlocked(true);
 
         // Fetch city/country from backend first
         fetch(`/api/geocode?lat=${lat}&lon=${lon}`)
@@ -226,12 +229,15 @@ export default function App() {
       },
       (error) => {
         console.warn("GPS Error code:", error.code, "message:", error.message);
-        setLocationStatus('denied');
-        let errMsg = "Location access denied. Please allow GPS permissions in your browser.";
-        if (error.code === error.POSITION_UNAVAILABLE) {
-          errMsg = "Location information is unavailable.";
+        setLocationStatus('error');
+        
+        let errMsg = "দয়া করে আপনার ডিভাইসের জিপিএস (GPS/Location) সচল করুন এবং ব্রাউজারে লোকেশন অনুমতি দিয়ে পুনরায় চেষ্টা করুন। (Please turn on your device's GPS and grant location permission in your browser.)";
+        if (error.code === error.PERMISSION_DENIED) {
+          errMsg = "ব্রাউজারে লোকেশন পারমিশন ব্লক করা আছে। দয়া করে ব্রাউজার সেটিংস থেকে অনুমতি দিন এবং পুনরায় চেষ্টা করুন। (Location permission is blocked. Please allow location access in your browser settings and try again.)";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errMsg = "আপনার ডিভাইসের জিপিএস বা লোকেশন সার্ভিসটি বন্ধ রয়েছে। দয়া করে জিপিএস সক্রিয় করে পুনরায় চেষ্টা করুন। (Your device's GPS/Location is turned off. Please turn on your physical GPS and try again.)";
         } else if (error.code === error.TIMEOUT) {
-          errMsg = "Location request timed out.";
+          errMsg = "জিপিএস সংযোগের সময় শেষ হয়েছে। দয়া করে জিপিএস সক্রিয় রাখুন এবং পুনরায় চেষ্টা করুন। (Location request timed out. Please ensure GPS is active and try again.)";
         }
         setLocationError(errMsg);
       },
@@ -339,11 +345,6 @@ export default function App() {
       setIsExporting(false);
     }
   };
-
-  // Request location automatically on mount
-  useEffect(() => {
-    requestGPSLocation();
-  }, []);
 
   // Update clock every second
   useEffect(() => {
@@ -532,16 +533,96 @@ export default function App() {
       <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none block"></div>
       <div className="absolute bottom-[-100px] right-[-100px] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none block"></div>
 
-      {/* Container holding top status elements and branding */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+      {!isAppUnlocked ? (
+        <div className="min-h-screen flex items-center justify-center p-4 relative z-20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="w-full max-w-md bg-slate-900/40 border border-white/10 backdrop-blur-xl rounded-[32px] p-8 text-center shadow-2xl relative"
+          >
+            {/* Elegant Brand Logo Container with visual pulse */}
+            <div className="mx-auto mb-6 w-24 h-24 rounded-full bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center shadow-2xl relative">
+              <AppLogo className="w-16 h-16" />
+              <span className="absolute top-2 right-2 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+              </span>
+            </div>
+
+            <h2 className="text-3xl font-extrabold tracking-widest text-emerald-400 mb-1">
+              ALAM TECH
+            </h2>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6">
+              নামাজ সময়সূচী ও গাইড (Prayer Guide)
+            </p>
+
+            <p className="text-sm font-medium text-slate-300 leading-relaxed mb-8">
+              সঠিক নামাজের ওয়াক্ত ও সাহরী-ইফতারের সময়সূচী নির্ধারণ করার জন্য দয়া করে আপনার ডিভাইসের জিপিএস (GPS) সংযোগ করুন। 
+              <span className="block text-xs text-slate-500 mt-2 font-semibold">
+                (Connecting your GPS is required to compute precise, local prayer times.)
+              </span>
+            </p>
+
+            {/* Error block with physical GPS info */}
+            {locationError && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 text-left font-semibold space-y-1"
+              >
+                <div className="flex items-center gap-2 text-red-400 font-extrabold">
+                  <Info size={14} className="shrink-0" />
+                  <span>জিপিএস সংযোগ ত্রুটি</span>
+                </div>
+                <p className="leading-relaxed text-[11px] opacity-90">{locationError}</p>
+                <p className="leading-relaxed text-[10px] text-slate-400 pt-1 font-medium border-t border-red-500/5 mt-1">
+                  সহায়তা: ফোনের বা পিসির সেটিংস থেকে Location/GPS সচল আছে কিনা তা চেক করুন এবং ব্রাউজারে লোকেশন পারমিশন দিন।
+                </p>
+              </motion.div>
+            )}
+
+            {/* Action button */}
+            <button
+              onClick={requestGPSLocation}
+              disabled={locationStatus === 'detecting'}
+              className={`w-full py-4 px-6 rounded-2xl font-black text-sm tracking-wider uppercase transition-all duration-300 flex flex-col items-center justify-center gap-0.5 cursor-pointer select-none ${
+                locationStatus === 'detecting'
+                  ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                  : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:bg-emerald-600 shadow-lg shadow-emerald-500/10 hover:scale-[1.02] active:scale-[0.98]'
+              }`}
+            >
+              {locationStatus === 'detecting' ? (
+                <>
+                  <RefreshCw size={20} className="animate-spin text-emerald-400 mb-1" />
+                  <span className="text-slate-400 font-extrabold">Connecting GPS...</span>
+                  <span className="text-[10px] font-bold text-slate-500 lowercase mt-0.5">জিপিএস সংযোগ করা হচ্ছে</span>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-[15px] font-black">
+                    <Navigation size={16} className="animate-pulse" />
+                    <span>Connect with your GPS</span>
+                  </div>
+                  <span className="text-[11px] text-slate-900 font-bold tracking-normal">জিপিএস সংযুক্ত করুন</span>
+                </>
+              )}
+            </button>
+
+            {/* Quote decoration */}
+            <div className="mt-8 pt-6 border-t border-white/5 text-[10px] text-slate-500 font-medium">
+              "নিশ্চয়ই নামায মুমিনদের ওপর নির্দিষ্ট সময়ে ফরয করা হয়েছে।" <br /> — সূরা আন-নিসা ৪:১০৩
+            </div>
+          </motion.div>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         
         {/* Top Navbar & Header as specified by instructions */}
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-white/10 relative z-10">
           <div className="flex flex-col">
             <h1 className="text-2.5xl font-extrabold tracking-widest text-emerald-400 flex items-center gap-2">
-              <svg className="w-7 h-7 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
-              </svg>
+              <AppLogo className="w-8 h-8" />
               ALAM TECH
             </h1>
             <div className="flex items-center gap-2 mt-1">
@@ -1010,6 +1091,7 @@ export default function App() {
         </div>
 
       </div>
+      )}
     </div>
   );
 }
