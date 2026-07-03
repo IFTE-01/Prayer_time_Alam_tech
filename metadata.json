@@ -1,0 +1,6 @@
+{
+  "name": "Alam Tech",
+  "description": "Calculate precise prayer (Namaz/Salah) times based on GPS location and solar calculations with evidence from the Quran and Sahih Hadith.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

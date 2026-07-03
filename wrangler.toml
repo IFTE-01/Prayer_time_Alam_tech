@@ -1,0 +1,6 @@
+name = "alam-tech-prayer-app"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "./dist"
+
+[vars]
+# You can set variables here if needed
