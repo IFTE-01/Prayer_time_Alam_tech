@@ -9,9 +9,9 @@ export interface HadithReference {
 export const HADITH_DATA: HadithReference[] = [
   {
     category: 'general',
-    text: "আমি রাসূলুল্লাহ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম)-কে জিজ্ঞাসা করলাম, 'কোন আমলটি আল্লাহর কাছে সবচেয়ে প্রিয়?' তিনি উত্তর দিলেন, 'আওয়াল ওয়াক্তে নামায আদায় করা।'",
-    source: "সহীহ বুখারী ৫২৭, সহীহ মুসলিম ৮৫",
-    international: "Sahih al-Bukhari: 527, Sahih Muslim: 85",
+    text: "রাসূলুল্লাহ্ সাল্লাল্লাহু আলাইহি ওয়া সাল্লামকে উত্তম আমল সম্পর্কে জিজ্ঞাসা করা হলে তিনি বলেনঃ ওয়াক্তের প্রথম ভাগে নামায আদায় করা সর্বোত্তম কাজ।",
+    source: "সুনান আবূ দাউদ : ৪২৬",
+    international: "Sunan Abi Dawud: 426",
     importance: 'high'
   },
   {

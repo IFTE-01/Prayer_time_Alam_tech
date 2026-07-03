@@ -620,7 +620,7 @@ export default function App() {
                   </h2>
                   <p className="text-slate-400 mt-3 text-sm max-w-lg leading-relaxed">
                     সহীহ নিয়মে হিসাবকৃত (সুন্নাহ অনুযায়ী ওয়াক্তের সঠিক গণনা)। <br />
-                    <span className="text-emerald-400 font-semibold italic">"আওয়াল ওয়াক্তে নামায আদায় করলে মহান আল্লাহ তায়ালা সবচেয়ে বেশি খুশি হন।"</span>
+                    <span className="text-emerald-400 font-semibold italic">"রাসূলুল্লাহ্ সা: বলেনঃ ওয়াক্তের প্রথম ভাগে নামায আদায় করা সর্বোত্তম কাজ।"</span>
                   </p>
                 </div>
 
@@ -693,10 +693,10 @@ export default function App() {
                   <div>
                     <h4 className="text-xs uppercase tracking-[0.2em] font-extrabold text-emerald-400 mb-1">আওয়াল ওয়াক্তে নামায আদায়ের গুরুত্ব</h4>
                     <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed">
-                      "আমি রাসূলুল্লাহ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম)-কে জিজ্ঞাসা করলাম, 'কোন আমলটি আল্লাহর কাছে সবচেয়ে প্রিয়?' তিনি উত্তর দিলেন, 'আওয়াল ওয়াক্তে নামায আদায় করা।'"
+                      "রাসূলুল্লাহ্ সাল্লাল্লাহু আলাইহি ওয়া সাল্লামকে উত্তম আমল সম্পর্কে জিজ্ঞাসা করা হলে তিনি বলেনঃ ওয়াক্তের প্রথম ভাগে নামায আদায় করা সর্বোত্তম কাজ।"
                     </p>
                     <p className="text-[10px] font-bold text-slate-400 mt-1">
-                      — সহীহ বুখারী ৫২৭, সহীহ মুসলিম ৮৫
+                      — সুনান আবূ দাউদ : ৪২৬
                     </p>
                   </div>
                 </div>
