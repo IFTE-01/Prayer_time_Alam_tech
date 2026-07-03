@@ -620,7 +620,7 @@ export default function App() {
                   </h2>
                   <p className="text-slate-400 mt-3 text-sm max-w-lg leading-relaxed">
                     সহীহ নিয়মে হিসাবকৃত (সুন্নাহ অনুযায়ী ওয়াক্তের সঠিক গণনা)। <br />
-                    <span className="text-emerald-400 font-semibold italic">"প্রথম ওয়াক্তে নামায আদায় করলে মহান আল্লাহ তায়ালা সবচেয়ে বেশি খুশি হন।"</span>
+                    <span className="text-emerald-400 font-semibold italic">"আওয়াল ওয়াক্তে নামায আদায় করলে মহান আল্লাহ তায়ালা সবচেয়ে বেশি খুশি হন।"</span>
                   </p>
                 </div>
 
@@ -691,9 +691,9 @@ export default function App() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-xs uppercase tracking-[0.2em] font-extrabold text-emerald-400 mb-1">ওয়াক্তের শুরুতে (প্রথম ওয়াক্তে) নামায আদায়ের গুরুত্ব</h4>
+                    <h4 className="text-xs uppercase tracking-[0.2em] font-extrabold text-emerald-400 mb-1">আওয়াল ওয়াক্তে নামায আদায়ের গুরুত্ব</h4>
                     <p className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed">
-                      "আমি রাসূলুল্লাহ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম)-কে জিজ্ঞাসা করলাম, 'কোন আমলটি আল্লাহর কাছে সবচেয়ে প্রিয়?' তিনি উত্তর দিলেন, 'প্রথম ওয়াক্তে (ওয়াক্তের শুরুতে) নামায আদায় করা।'"
+                      "আমি রাসূলুল্লাহ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম)-কে জিজ্ঞাসা করলাম, 'কোন আমলটি আল্লাহর কাছে সবচেয়ে প্রিয়?' তিনি উত্তর দিলেন, 'আওয়াল ওয়াক্তে নামায আদায় করা।'"
                     </p>
                     <p className="text-[10px] font-bold text-slate-400 mt-1">
                       — সহীহ বুখারী ৫২৭, সহীহ মুসলিম ৮৫

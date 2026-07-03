@@ -52,10 +52,10 @@ export default function HadithSection({ activePrayerId }: HadithSectionProps) {
         </div>
         <div>
           <h2 className="text-xl font-bold text-zinc-850 dark:text-zinc-100 font-sans tracking-tight">
-            হাদিস ও কুরআনের আলো (প্রথম ওয়াক্তের গুরুত্ব)
+            হাদিস ও কুরআনের আলো (আওয়াল ওয়াক্তের গুরুত্ব)
           </h2>
           <p className="text-xs text-zinc-500 dark:text-slate-400 mt-1">
-            আল্লাহর সন্তুষ্টির জন্য প্রথম ওয়াক্তে নামায আদায়ের সহীহ দলিলসমূহ
+            আল্লাহর সন্তুষ্টির জন্য আওয়াল ওয়াক্তে নামায আদায়ের সহীহ দলিলসমূহ
           </p>
         </div>
       </div>
