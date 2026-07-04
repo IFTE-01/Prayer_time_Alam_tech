@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Sun, MapPin, Navigation, Settings, HelpCircle, 
+  Sun, Sunrise, MapPin, Navigation, Settings, HelpCircle, 
   Calendar, Clock, ShieldCheck, Compass, Info, Check, RefreshCw,
   Copy, Download
 } from 'lucide-react';
@@ -823,8 +823,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Sehri & Iftar Card Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+              {/* Sehri, Sunrise & Iftar Card Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                 {/* Sehri Ending card */}
                 <div className="p-6 rounded-3xl bg-red-950/20 border border-red-500/20 flex items-center justify-between group shadow-sm">
                   <div className="flex items-center gap-3">
@@ -839,6 +839,24 @@ export default function App() {
                   <div className="text-right">
                     <span className="text-2xl sm:text-3xl font-black font-mono text-red-400">
                       {formatPrayerTime(calculatedTimes.raw.fajr - 1.0 / 60.0)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sunrise (-1 min) Card */}
+                <div className="p-6 rounded-3xl bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between group shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl group-hover:scale-105 transition-transform">
+                      <Sunrise size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-sans">Sunrise</h4>
+                      <h3 className="text-sm font-extrabold text-white mt-0.5">সূর্যোদয়ের সময়</h3>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+                      {formatPrayerTime(calculatedTimes.raw.sunrise - 1.0 / 60.0)}
                     </span>
                   </div>
                 </div>
@@ -987,19 +1005,26 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Sehri & Iftar Timings inside downloadable Card */}
-                  <div className="bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-3 relative z-10 grid grid-cols-2 gap-2 text-center font-sans">
-                    <div className="flex flex-col items-center justify-center border-r border-emerald-500/10 pr-1">
-                      <span className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider">Sehri End</span>
-                      <span className="text-[7px] text-slate-500 font-bold leading-none mt-0.5">সেহরি শেষ</span>
-                      <p className="text-[10px] sm:text-xs font-black font-mono text-red-400 mt-1">
+                  {/* Sehri, Sunrise & Iftar Timings inside downloadable Card */}
+                  <div className="bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-3 relative z-10 grid grid-cols-3 gap-1 text-center font-sans">
+                    <div className="flex flex-col items-center justify-center border-r border-emerald-500/10 pr-0.5">
+                      <span className="text-[7px] text-slate-400 font-extrabold uppercase tracking-wider">Sehri End</span>
+                      <span className="text-[6.5px] text-slate-500 font-bold leading-none mt-0.5">সেহরি শেষ</span>
+                      <p className="text-[9px] sm:text-[10px] font-black font-mono text-red-400 mt-1">
                         {formatPrayerTime(calculatedTimes.raw.fajr - 1.0 / 60.0, false)}
                       </p>
                     </div>
-                    <div className="flex flex-col items-center justify-center pl-1">
-                      <span className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider">Iftar Time</span>
-                      <span className="text-[7px] text-slate-500 font-bold leading-none mt-0.5">ইফতার</span>
-                      <p className="text-[10px] sm:text-xs font-black font-mono text-amber-400 mt-1">
+                    <div className="flex flex-col items-center justify-center border-r border-emerald-500/10 px-0.5">
+                      <span className="text-[7px] text-slate-400 font-extrabold uppercase tracking-wider">Sunrise</span>
+                      <span className="text-[6.5px] text-slate-500 font-bold leading-none mt-0.5">সূর্যোদয়</span>
+                      <p className="text-[9px] sm:text-[10px] font-black font-mono text-emerald-400 mt-1">
+                        {formatPrayerTime(calculatedTimes.raw.sunrise - 1.0 / 60.0, false)}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center pl-0.5">
+                      <span className="text-[7px] text-slate-400 font-extrabold uppercase tracking-wider">Iftar Time</span>
+                      <span className="text-[6.5px] text-slate-500 font-bold leading-none mt-0.5">ইফতার</span>
+                      <p className="text-[9px] sm:text-[10px] font-black font-mono text-amber-400 mt-1">
                         {formatPrayerTime(calculatedTimes.raw.maghrib, false)}
                       </p>
                     </div>
