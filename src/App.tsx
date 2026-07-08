@@ -446,14 +446,33 @@ export default function App() {
       };
     }
     // Isha: from Isha till midnight, or from midnight till Fajr
-    if (currentDecimalHour >= isha || currentDecimalHour < fajr) {
+    // We calculate Islamic Midnight dynamically here (Maghrib to Fajr duration halved)
+    let fajrTimeForMidnight = fajr;
+    if (fajrTimeForMidnight < maghrib) {
+      fajrTimeForMidnight += 24;
+    }
+    const midnightRaw = (maghrib + (fajrTimeForMidnight - maghrib) / 2) % 24;
+
+    // Establish the chronological timeline relative to Maghrib to avoid hour wrapping issues
+    const t_maghrib = 0;
+    const t_isha = (isha - maghrib + 24) % 24;
+    const t_midnight = (midnightRaw - maghrib + 24) % 24;
+    const t_fajr = (fajrTimeForMidnight - maghrib + 24) % 24;
+    const t_current = (currentDecimalHour - maghrib + 24) % 24;
+
+    if (t_current >= t_isha && t_current < t_fajr) {
+      const isPreferred = t_current < t_midnight;
+      const oneMin = 1.0 / 60.0;
+      const ishaEndTimeRaw = isPreferred ? (midnightRaw - oneMin + 24) % 24 : fajr;
+
       return {
         id: 'isha' as const,
         name: 'Isha',
-        banglaName: 'এশা',
+        banglaName: isPreferred ? 'এশা (পছন্দনীয় ওয়াক্ত - Choice)' : 'এশা (জরুরি ওয়াক্ত - Necessity)',
         startTimeStr: calculatedTimes.isha,
-        endTimeStr: calculatedTimes.fajr,
-        isNamazPeriodRunning: true
+        endTimeStr: formatPrayerTime(ishaEndTimeRaw, is24h),
+        isNamazPeriodRunning: true,
+        ishaSubPeriod: isPreferred ? 'preferred' : 'necessity'
       };
     }
 
@@ -769,7 +788,25 @@ export default function App() {
                   </div>
                 </div>
 
-                {runningPeriod.isNamazPeriodRunning ? null : (
+                {runningPeriod.isNamazPeriodRunning ? (
+                  <div className="text-left md:text-right border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6 shrink-0 relative z-10 flex flex-col gap-1">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">ওয়াক্তের শেষ সময়</p>
+                    <p className="font-mono text-xl font-black text-emerald-400">
+                      {getSalahEndTimeStr(runningPeriod.id)}
+                    </p>
+                    <div className="flex flex-col md:items-end gap-0.5">
+                      <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
+                        runningPeriod.id === 'fajr' || runningPeriod.id === 'isha'
+                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/10'
+                          : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10'
+                      }`}>
+                        {runningPeriod.id === 'fajr' || runningPeriod.id === 'isha' 
+                          ? 'অ-ধারাবাহিক • Non-Continuous' 
+                          : 'ধারাবাহিক • Continuous'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
                   <div className="text-left md:text-right border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6 shrink-0 relative z-10 flex flex-col gap-0.5">
                     <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">পরবর্তী ওয়াক্ত শুরু</p>
                     <p className="font-mono text-base font-black text-amber-400 mt-1">
@@ -779,6 +816,36 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* Isha Timing and Scholarly Ruling Details Block */}
+              {runningPeriod.id === 'isha' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-5 rounded-[24px] bg-emerald-950/20 border border-emerald-500/15 text-xs text-slate-300 relative overflow-hidden z-10 shadow-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <Info size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-white mb-1.5 text-sm">
+                        এশা ওয়াক্তের ধারাবাহিকতা ও শেষ সময় সংক্রান্ত শরীঈ বিধান • Isha Timing & Continuity ruling:
+                      </p>
+                      <p className="leading-relaxed mb-2.5">
+                        <strong className="text-emerald-400">সহীহ হাদীসের বিধান:</strong> রাসূলুল্লাহ (সা.) বলেছেন, <span className="italic text-emerald-300 font-medium">"এশার ওয়াক্ত হচ্ছে অর্ধরাত্রি পর্যন্ত।"</span> (সহীহ মুসলিম６১২)। <br />
+                        <strong className="text-emerald-400">সালাফী ওলামাদের ফতোয়া:</strong> শায়খ ইবনে বায ও শায়খ ইবনে উছাইমীনসহ সালাফী স্কলারদের ফতোয়া অনুযায়ী, বিনা ওজরে এশার নামায অর্ধরাত্রির (Islamic Midnight) পরে বিলম্ব করা জায়েয নয়। এশার ওয়াক্ত ফজর পর্যন্ত <span className="text-rose-400 font-extrabold underline">ধারাবাহিক নয়</span>। অর্ধরাত্রির পর শুধুমাত্র অপারগ বা ওযরগ্রস্ত ব্যক্তিদের জন্য জরুরি সময় (ওয়াক্তে জরুরত) ফজর পর্যন্ত বলবৎ থাকে।
+                      </p>
+                      <div className="border-t border-emerald-500/10 pt-2 text-[11px] text-slate-400 leading-relaxed space-y-1">
+                        <p>
+                          <strong className="text-emerald-400/80">English Reference:</strong> According to Sahih Hadith (Sahih Muslim 612) and major Salafi scholars (e.g. Sheikh Ibn Baz, Sheikh Ibn Uthaymeen), the preferred time (Waqt al-Ikhtiyar) of Isha ends at Islamic Midnight and is <strong className="text-rose-400 font-bold underline">NOT continuous</strong> with Fajr. Delaying it past midnight without a valid excuse (Waqt al-Darurah) is impermissible.
+                        </p>
+                        <p className="text-[10px] text-slate-500 italic">
+                          * Islamic Midnight calculation: Sunset (Maghrib) to Dawn (Fajr) duration halved, plus Maghrib time, minus 1 minute precaution.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Core Hadith on Awal/First Waqt Prayer */}
               <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-3xl p-6 relative overflow-hidden shadow-sm relative z-10">
