@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sun, Sunrise, MapPin, Navigation, Settings, HelpCircle, 
   Calendar, Clock, ShieldCheck, Compass, Info, Check, RefreshCw,
-  Copy, Download
+  Copy, Download, AlertCircle
 } from 'lucide-react';
 
 import { 
@@ -372,6 +372,50 @@ export default function App() {
   // Parse actual numerical decimal values to compare with current clock decimal hour
   const currentDecimalHour = clockTime.getHours() + clockTime.getMinutes() / 60 + clockTime.getSeconds() / 3600;
 
+  // Prohibited prayer times (Uqat an-Nahy) according to Quran and Sahih Hadith, dynamically calculated based on location
+  const prohibitedTimes = [
+    {
+      id: 'sunrise_prohibited',
+      name: 'Sunrise Prohibited',
+      banglaName: 'সূর্যোদয়কালীন নিষিদ্ধ সময় (Sunrise)',
+      startTime: calculatedTimes.raw.sunrise,
+      endTime: calculatedTimes.raw.sunrise + 15 / 60, // 15 mins after Sunrise (sun rises to height of a spear)
+      startTimeStr: formatPrayerTime(calculatedTimes.raw.sunrise, is24h),
+      endTimeStr: formatPrayerTime(calculatedTimes.raw.sunrise + 15 / 60, is24h),
+      hadithRef: 'সহীহ মুসলিম ৮৩২ (Sahih Muslim 832)',
+      hadithTextBg: 'সূর্য উদিত হওয়ার সময় থেকে তা পুরোপুরি উদিত হয়ে এক বর্ষা পরিমাণ উঁচু হওয়া পর্যন্ত নামায আদায় করা নিষেধ।',
+      hadithTextEn: 'Stop praying when the sun begins to rise until it is fully risen (approximately 15 minutes).',
+    },
+    {
+      id: 'zawal_prohibited',
+      name: 'Zawal Prohibited',
+      banglaName: 'মধ্যাহ্নকালীন নিষিদ্ধ সময় (Zawal)',
+      startTime: calculatedTimes.raw.dhuhr - 15 / 60, // 15 mins before Dhuhr start (zenith/noon)
+      endTime: calculatedTimes.raw.dhuhr,
+      startTimeStr: formatPrayerTime(calculatedTimes.raw.dhuhr - 15 / 60, is24h),
+      endTimeStr: formatPrayerTime(calculatedTimes.raw.dhuhr, is24h),
+      hadithRef: 'সহীহ মুসলিম ৮৩২ (Sahih Muslim 832)',
+      hadithTextBg: 'ঠিক দুপুরবেলা যখন সূর্য মাথার উপর সোজা থাকে, তখন নামায আদায় করা নিষেধ (যতক্ষণ না সূর্য পশ্চিম আকাশে ঢলে পড়ে এবং যোহরের ওয়াক্ত শুরু হয়)।',
+      hadithTextEn: 'Stop praying when the sun is directly overhead at its meridian until it has passed the zenith.',
+    },
+    {
+      id: 'sunset_prohibited',
+      name: 'Sunset Prohibited',
+      banglaName: 'সূর্যাস্তকালীন নিষিদ্ধ সময় (Sunset)',
+      startTime: calculatedTimes.raw.maghrib - 15 / 60, // 15 mins before Maghrib start (setting of the sun)
+      endTime: calculatedTimes.raw.maghrib,
+      startTimeStr: formatPrayerTime(calculatedTimes.raw.maghrib - 15 / 60, is24h),
+      endTimeStr: formatPrayerTime(calculatedTimes.raw.maghrib, is24h),
+      hadithRef: 'সহীহ মুসলিম ৮৩২ (Sahih Muslim 832)',
+      hadithTextBg: 'সূর্য হলুদ হয়ে ডোবার কাছাকাছি হওয়ার সময় থেকে নিয়ে পুরোপুরি ডুবে যাওয়া পর্যন্ত নামায আদায় করা নিষেধ (ব্যতিক্রম: সেদিনের আসরের ফরয নামায বাকী থাকলে আদায় করা যাবে, তবে বিনা ওজরে এত দেরি করা মাকরূহে তাহরীমী বা গুনাহ)।',
+      hadithTextEn: 'Stop praying when the sun draws near to setting until it has set, except for that day\'s obligatory Asr if delayed.',
+    }
+  ];
+
+  const activeProhibited = prohibitedTimes.find(
+    p => currentDecimalHour >= p.startTime && currentDecimalHour < p.endTime
+  );
+
   // Find active and next prayers (REMOVED Sunrise as requested, Sunset is also absent)
   const prayersInOrder = [
     { id: 'fajr', name: 'Fajr', timeValue: calculatedTimes.raw.fajr, timeStr: calculatedTimes.fajr },
@@ -445,7 +489,7 @@ export default function App() {
         isNamazPeriodRunning: true
       };
     }
-    // Isha: from Isha till midnight, or from midnight till Fajr
+    // Isha: from Isha till midnight
     // We calculate Islamic Midnight dynamically here (Maghrib to Fajr duration halved)
     let fajrTimeForMidnight = fajr;
     if (fajrTimeForMidnight < maghrib) {
@@ -460,27 +504,26 @@ export default function App() {
     const t_fajr = (fajrTimeForMidnight - maghrib + 24) % 24;
     const t_current = (currentDecimalHour - maghrib + 24) % 24;
 
-    if (t_current >= t_isha && t_current < t_fajr) {
-      const isPreferred = t_current < t_midnight;
+    if (t_current >= t_isha && t_current < t_midnight) {
       const oneMin = 1.0 / 60.0;
-      const ishaEndTimeRaw = isPreferred ? (midnightRaw - oneMin + 24) % 24 : fajr;
+      const ishaEndTimeRaw = (midnightRaw - oneMin + 24) % 24;
 
       return {
         id: 'isha' as const,
         name: 'Isha',
-        banglaName: isPreferred ? 'এশা (পছন্দনীয় ওয়াক্ত - Choice)' : 'এশা (জরুরি ওয়াক্ত - Necessity)',
+        banglaName: 'এশা',
         startTimeStr: calculatedTimes.isha,
         endTimeStr: formatPrayerTime(ishaEndTimeRaw, is24h),
         isNamazPeriodRunning: true,
-        ishaSubPeriod: isPreferred ? 'preferred' : 'necessity'
+        ishaSubPeriod: 'preferred'
       };
     }
 
-    // Between Sunrise and Dhuhr (No obligatory prayer running)
+    // Between Sunrise and Dhuhr, or after Midnight and before Fajr (No obligatory prayer running)
     return {
       id: 'none' as const,
       name: 'None',
-      banglaName: 'কোনো ফরজ নামাজের ওয়াক্ত নেই',
+      banglaName: 'এখন কোন ফরজ সালাত এর ওয়াক্ত নাই',
       startTimeStr: '',
       endTimeStr: '',
       isNamazPeriodRunning: false
@@ -722,6 +765,47 @@ export default function App() {
         {/* TIMES DASHBOARD */}
         <div className="space-y-8">
               
+              {/* Prohibited Prayer Time Red Alert */}
+              {activeProhibited && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-6 rounded-[32px] bg-red-950/45 border border-red-500/30 text-red-200 relative overflow-hidden z-10 shadow-[0_0_40px_rgba(239,68,68,0.15)]"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-red-500/20 text-red-400 rounded-2xl shrink-0 mt-0.5 animate-pulse">
+                      <AlertCircle size={24} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                        <span className="text-[10px] bg-red-500 text-white font-extrabold px-2.5 py-0.5 rounded-full tracking-widest uppercase flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                          নামাযের নিষিদ্ধ সময় • Prohibited Time
+                        </span>
+                        <span className="text-xs text-red-400 font-bold font-mono">
+                          {activeProhibited.startTimeStr} - {activeProhibited.endTimeStr}
+                        </span>
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-black text-white leading-tight">
+                        সতর্কতা: বর্তমানে নামায আদায় করা সম্পূর্ণ নিষিদ্ধ!
+                      </h3>
+                      <p className="text-red-300/95 text-xs sm:text-sm mt-1.5 leading-relaxed font-semibold">
+                        {activeProhibited.banglaName} চলছে। এ সময় সকল প্রকার নামায (ফরয, ওয়াজিব, সুন্নাত, নফল বা কাযা) এবং জানাযা আদায় ও সিজদায়ে তিলাওয়াত করা শরীআত অনুযায়ী কঠোরভাবে নিষিদ্ধ।
+                      </p>
+                      <div className="mt-3.5 pt-3.5 border-t border-red-500/10 flex flex-col gap-2 text-[11px] text-red-400/80 leading-relaxed">
+                        <p>
+                          <strong className="text-red-300 font-bold">সহীহ হাদীসের নিষেধাজ্ঞা:</strong> {activeProhibited.hadithTextBg}
+                        </p>
+                        <p>
+                          <strong className="text-red-300/80 font-semibold">Hadith basis:</strong> {activeProhibited.hadithTextEn} <span className="font-mono text-[10px] text-red-400/60">— {activeProhibited.hadithRef}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              
               {/* Hero Section: Next Prayer with Immersive aesthetic */}
               <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-emerald-900/40 to-slate-900/40 border border-emerald-500/20 p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-md">
                 {/* Background watermark text */}
@@ -777,7 +861,7 @@ export default function App() {
                       ) : (
                         <>
                           <span className="text-amber-400">
-                            বর্তমানে কোনো ফরজ নামাজের ওয়াক্ত নেই
+                            {runningPeriod.banglaName}
                           </span>
                           <span className="text-xs text-slate-400 font-semibold px-2 py-0.5 rounded-lg bg-white/5 border border-white/5">
                             No Active Obligatory Waqt
@@ -944,6 +1028,90 @@ export default function App() {
                       {formatPrayerTime(calculatedTimes.raw.maghrib)}
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Prohibited/Forbidden Prayer Times Section */}
+              <div className="relative z-10 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] text-red-400 font-extrabold uppercase tracking-widest block mb-1">
+                      ওয়াকত-উন্-নাহয়ী • Forbidden Prayer Times
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      নামাযের নিষিদ্ধ সময়সূচী (সূর্য ও অবস্থান ভিত্তিক)
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      সহীহ হাদীস ও জিপিএস অবস্থান অনুযায়ী গণনা করা হয়েছে। এ সময়গুলোতে যেকোনো প্রকার নামায পড়া কঠোরভাবে নিষিদ্ধ।
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                    <Info size={12} className="text-slate-400" /> সুন্নাহ ও অবস্থানভিত্তিক গতিশীল হিসাব
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {prohibitedTimes.map((item) => {
+                    const isCurrent = currentDecimalHour >= item.startTime && currentDecimalHour < item.endTime;
+                    const isPassed = currentDecimalHour >= item.endTime;
+                    const isUpcoming = currentDecimalHour < item.startTime;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-5 rounded-3xl border transition-all flex flex-col justify-between gap-4 ${
+                          isCurrent
+                            ? 'bg-red-500/10 border-red-500/30 shadow-[0_0_25px_rgba(239,68,68,0.1)]'
+                            : 'bg-white/5 border-white/10 opacity-80'
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
+                              isCurrent
+                                ? 'bg-red-500 text-white animate-pulse'
+                                : isPassed
+                                ? 'bg-slate-500/10 text-slate-400'
+                                : 'bg-amber-500/10 text-amber-400'
+                            }`}>
+                              {isCurrent ? 'চলমান • ACTIVE' : isPassed ? 'অতিক্রান্ত • PASSED' : 'আসন্ন • UPCOMING'}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 font-mono">
+                              {item.hadithRef}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h3 className={`text-base font-bold ${isCurrent ? 'text-red-400' : 'text-white'}`}>
+                              {item.banglaName.split(' (')[0]}
+                            </h3>
+                            <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider font-sans mt-0.5">
+                              {item.name}
+                            </p>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 mt-2">
+                            <span className={`text-2xl font-black font-mono tracking-tight ${isCurrent ? 'text-red-400' : 'text-slate-200'}`}>
+                              {item.startTimeStr}
+                            </span>
+                            <span className="text-xs text-slate-500 font-semibold px-1">থেকে</span>
+                            <span className={`text-2xl font-black font-mono tracking-tight ${isCurrent ? 'text-red-400' : 'text-slate-200'}`}>
+                              {item.endTimeStr}
+                            </span>
+                          </div>
+
+                          <div className="border-t border-white/5 pt-3">
+                            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                              {item.hadithTextBg}
+                            </p>
+                            <p className="text-[10px] text-slate-500 leading-relaxed italic mt-2">
+                              "{item.hadithTextEn}"
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
